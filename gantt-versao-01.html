@@ -41,6 +41,80 @@
 
   <!--<script src="libs/profiling.js"></script>-->
   <!--<script type="text/javascript" src="ganttTestSuite.js"></script>-->
+
+  <style>
+    .resEdit {
+      padding: 15px;
+    }
+
+    .resLine {
+      width: 95%;
+      padding: 3px;
+      margin: 5px;
+      border: 1px solid #d0d0d0;
+    }
+
+    body {
+      overflow: hidden;
+    }
+
+    .ganttButtonBar h1{
+      color: #000000;
+      font-weight: bold;
+      font-size: 28px;
+      margin-left: 10px;
+    }
+
+    /* Mantém o Gantt em altura previsível para o cálculo das barras */
+    #workSpace {
+      height: calc(100vh - 32px); /* ajuste fino se tiver header/top bar */
+      overflow-y: hidden;          /* evita scroll vertical duplo no wrapper */
+
+      padding:0px;
+      overflow-y:auto;
+      overflow-x:hidden;
+      border:1px solid #e5e5e5;
+      position:relative;
+      margin:0 5px
+    }
+
+    /* As caixas do splitter acompanham 100% da altura disponível */
+    #workSpace .splitElement {
+      height: 100%;
+    }
+
+
+  </style>
+
+
+  <script>
+    (function () {
+      function aplicarScrollEstavel() {
+        var ws = document.getElementById( "workSpace" );
+        if ( !ws ) return;
+
+        var alvos = ws.querySelectorAll( ".splitBox1, .splitBox2" );
+        alvos.forEach( function ( el ) {
+          el.style.overflowX = "scroll";
+          el.style.scrollbarGutter = "stable both-edges";
+          el.style.overscrollBehavior = "contain";
+        } );
+      }
+
+      // Reaplica no resize para evitar qualquer flapping em mudanças de viewport
+      window.addEventListener( "resize", aplicarScrollEstavel, { passive: true } );
+
+      // Hook simples: tente reaplicar quando o DOM estiver pronto e após init
+      document.addEventListener( "DOMContentLoaded", aplicarScrollEstavel, { passive: true } );
+
+      // Exponha para chamar exatamente após o loadProject (ver abaixo)
+      window.__fixGanttScroll = aplicarScrollEstavel;
+    })();
+  </script>
+
+
+
+
 </head>
 <body style="background-color: #fff;">
 
@@ -48,32 +122,8 @@
 <div id="ndo" style="position:absolute;right:5px;top:5px;width:378px;padding:5px;background-color: #FFF5E6; border:1px solid #F9A22F; font-size:12px" class="noprint">
   This Gantt editor is free thanks to <a href="http://twproject.com" target="_blank">Twproject</a> where it can be used on a complete and flexible project management solution.<br> Get your projects done! Give <a href="http://twproject.com" target="_blank">Twproject a try now</a>.
 </div>
-<div id="workSpace" style="padding:0px; overflow-y:auto; overflow-x:hidden;border:1px solid #e5e5e5;position:relative;margin:0 5px"></div>
+<div id="workSpace"></div>
 
-<style>
-  .resEdit {
-    padding: 15px;
-  }
-
-  .resLine {
-    width: 95%;
-    padding: 3px;
-    margin: 5px;
-    border: 1px solid #d0d0d0;
-  }
-
-  body {
-    overflow: hidden;
-  }
-
-  .ganttButtonBar h1{
-    color: #000000;
-    font-weight: bold;
-    font-size: 28px;
-    margin-left: 10px;
-  }
-
-</style>
 
 <form id="gimmeBack" style="display:none;" action="../gimmeBack.jsp" method="post" target="_blank"><input type="hidden" name="prj" id="gimBaPrj"></form>
 
@@ -108,6 +158,9 @@ $(function() {
   ge.checkpoint(); //empty the undo stack
 
   //initializeHistoryManagement(ge.tasks[0].id);
+
+  if ( window.__fixGanttScroll ) { window.__fixGanttScroll(); }
+
 });
 
 

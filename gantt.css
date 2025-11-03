@@ -92,15 +92,26 @@ body{
   height: 100%;
 }
 
-.splitBox1{
+.splitBox1,.splitBox2 {
+  overflow-y: auto   !important;
+
+  /* força a presença da barra horizontal */
   overflow-x: scroll !important;
-  overflow-y: hidden;
+
+  /* reserva espaço mesmo quando o SO tenta ocultar/overlay do scroll,
+     evitando "salto" no layout ao redimensionar */
+  scrollbar-gutter: stable both-edges;
+
+  /* evita propagação de scroll para o body e ajuda na experiência */
+  overscroll-behavior: contain;
 }
 
-.splitBox2 {
-  overflow-x: scroll !important;
-  overflow-y: auto   !important;
+/* Opcional (melhora visual no Chrome/Edge/WebKit): garante altura de trilho */
+.splitBox1::-webkit-scrollbar,
+.splitBox2::-webkit-scrollbar {
+  height: 12px;
 }
+
 
 
 .splitElement {
