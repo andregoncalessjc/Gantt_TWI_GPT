@@ -1,0 +1,23 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+        {
+            "label": "Abrir navegador no arquivo ativo",
+            "type": "shell",
+            "command": "start http://localhost:3001/${workspaceFolder}/${file}",
+            "problemMatcher": []
+        },
+		{
+			"type": "typescript",
+			"tsconfig": "Z_library/file-upload-filepond/types/tsconfig.json",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"label": "tsc: compilar – Z_library/file-upload-filepond/types/tsconfig.json"
+		}
+	]
+}

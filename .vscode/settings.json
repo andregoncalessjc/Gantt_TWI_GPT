@@ -1,0 +1,4 @@
+{
+    "phpserver.port": 3001,
+    "CodeGPT.apiKey": "OpenAI"
+}

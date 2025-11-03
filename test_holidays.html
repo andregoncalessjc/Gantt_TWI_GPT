@@ -1,0 +1,66 @@
+<html lang="pt-BR">
+<html>
+<head>
+    <title>Teste de Feriados</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="libs/date.js"></script>
+    <script src="libs/i18nJs.js"></script>
+    <script>
+        // Simulação do objeto ge para testes
+        var ge = {
+            loadedProject: {
+                calendarHolidays: ["2025-05-21", "2025-02-27", "2025-05-01", "2025-05-19"]
+            }
+        };
+
+        function testarFeriados() {
+            var resultados = document.getElementById('resultados');
+            resultados.innerHTML = '';
+            
+            // Testar finais de semana
+            var sabado = new Date('2025-05-17'); // Sábado
+            var domingo = new Date('2025-05-18'); // Domingo
+            
+            // Testar dia útil (sexta-feira)
+            var sexta = new Date('2025-05-16'); // Sexta-feira
+            
+            // Testar feriados da lista
+            var feriado1 = new Date('2025-05-21');
+            var feriado2 = new Date('2025-02-27');
+            var feriado3 = new Date('2025-05-01');
+            var feriado4 = new Date('2025-05-19');
+            
+            // Testar dias normais
+            var diaNormal1 = new Date('2025-05-20');
+            var diaNormal2 = new Date('2025-05-22');
+            
+            // Exibir resultados
+            adicionarResultado('Sábado (2025-05-17)', sabado, isHoliday(sabado));
+            adicionarResultado('Domingo (2025-05-18)', domingo, isHoliday(domingo));
+            adicionarResultado('Sexta-feira (2025-05-16)', sexta, isHoliday(sexta));
+            adicionarResultado('Feriado 1 (2025-05-21)', feriado1, isHoliday(feriado1));
+            adicionarResultado('Feriado 2 (2025-02-27)', feriado2, isHoliday(feriado2));
+            adicionarResultado('Feriado 3 (2025-05-01)', feriado3, isHoliday(feriado3));
+            adicionarResultado('Feriado 4 (2025-05-19)', feriado4, isHoliday(feriado4));
+            adicionarResultado('Dia Normal 1 (2025-05-20)', diaNormal1, isHoliday(diaNormal1));
+            adicionarResultado('Dia Normal 2 (2025-05-22)', diaNormal2, isHoliday(diaNormal2));
+        }
+        
+        function adicionarResultado(descricao, data, ehFeriado) {
+            var resultados = document.getElementById('resultados');
+            var linha = document.createElement('div');
+            linha.innerHTML = descricao + ': ' + (ehFeriado ? 'É feriado/fim de semana' : 'Não é feriado/fim de semana');
+            linha.style.color = ehFeriado ? 'red' : 'green';
+            resultados.appendChild(linha);
+        }
+    </script>
+</head>
+<body onload="testarFeriados()">
+    <h1>Teste da Função isHoliday</h1>
+    <p>Este teste verifica se a função isHoliday está identificando corretamente os feriados e finais de semana.</p>
+    
+    <div id="resultados"></div>
+    
+    <button onclick="testarFeriados()">Executar Teste Novamente</button>
+</body>
+</html>
