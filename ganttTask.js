@@ -132,6 +132,19 @@ Task.prototype.setPeriod = function (start, end) {
   var newDuration = recomputeDuration(start, end);
 
   
+ /* Manus */
+   // REGRA CUSTOM (FASE 1): trava início se a tarefa já iniciou (progress > 0)
+  // Implementa a Regra 1: Início Fixo, Duração Variável
+  if (this.progress > 0) {
+    // Se a tarefa já iniciou, a data de início é fixa (data de início real)
+    start = originalPeriod.start;
+
+    // A duração (e, consequentemente, o fim) pode ser alterada livremente
+    // O 'end' já está calculado com a nova duração desejada pelo usuário
+  }
+
+
+  /* GPT
   // REGRA CUSTOM (FASE 1): trava início se a tarefa já iniciou
   if (this.progress > 0 && start != originalPeriod.start) {
     start = originalPeriod.start;
@@ -143,7 +156,7 @@ Task.prototype.setPeriod = function (start, end) {
       end = originalPeriod.end;
     }
   }
-
+*/
 
 
 
@@ -299,6 +312,7 @@ Task.prototype.moveTo = function (start, ignoreMilestones, propagateToInferiors)
 
   var wantedStartMillis = start;
   // REGRA CUSTOM (FASE 1): se já iniciou, não muda start
+  // Implementa a Regra 1: Início Fixo
   if (this.progress > 0) { start = this.start; }
 
   // se o start efetivo continua igual e o fim calculado também, não prossiga
@@ -314,9 +328,25 @@ Task.prototype.moveTo = function (start, ignoreMilestones, propagateToInferiors)
     }
   }
 
+  /*Manus */
+  //if depends, start is set to max end + lag of superior
+  // REGRA CUSTOM (FASE 2): Se a tarefa NÃO iniciou (progress == 0), ignora dependências.
+  if (this.progress == 0) {
+    // Permite movimento livre, ignorando a restrição de dependência
+    // O 'start' permanece o 'start' desejado (wantedStartMillis)
+  } else {
+    // Se a tarefa JÁ iniciou, mantém a checagem de dependência (comportamento padrão)
+    start = this.computeStartBySuperiors(start);
+  }
 
+
+  /* GPT
   //if depends, start is set to max end + lag of superior
   start = this.computeStartBySuperiors(start);
+  */
+
+
+
 
   var end = computeEndByDuration(start, this.duration);
 
