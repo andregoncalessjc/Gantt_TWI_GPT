@@ -186,12 +186,9 @@ Task.prototype.setPeriod = function (start, end) {
   }
 
   //if there are dependencies compute the start date and eventually moveTo
-  // REGRA CUSTOM: Só aplica restrição de dependência se a tarefa JÁ iniciou
-  if (this.progress > 0) {
-    var startBySuperiors = this.computeStartBySuperiors(start);
-    if (startBySuperiors != start) {
-      return this.moveTo(startBySuperiors, false,true);
-    }
+  var startBySuperiors = this.computeStartBySuperiors(start);
+  if (startBySuperiors != start) {
+    return this.moveTo(startBySuperiors, false,true);
   }
 
   var somethingChanged = false;
@@ -278,15 +275,6 @@ Task.prototype.setPeriod = function (start, end) {
   }
 
   if (todoOk) {
-    // ====================================================================
-    // LAG DINAMICO: Recalcular LAGs de predecessoras
-    // ====================================================================
-    // Se a tarefa NAO iniciou (progress == 0), recalcula LAGs
-    // Tarefas INICIADAS (progress > 0) mantem LAG fixo
-    if (this.progress == 0) {
-      this.recalculateLags();
-    }
-
     todoOk = this.propagateToInferiors(end);
   }
   return todoOk;
@@ -376,15 +364,6 @@ Task.prototype.moveTo = function (start, ignoreMilestones, propagateToInferiors)
       return false;
     }
 
-    // ====================================================================
-    // LAG DINÂMICO: Recalcular LAGs de predecessoras
-    // ====================================================================
-    // Se a tarefa NÃO iniciou (progress == 0), recalcula LAGs
-    // Tarefas INICIADAS (progress > 0) mantém LAG fixo
-    if (this.progress == 0) {
-      this.recalculateLags();
-    }
-
     if (propagateToInferiors) {
       this.propagateToInferiors(end);
       var todoOk = true;
@@ -470,168 +449,6 @@ Task.prototype.computeStartBySuperiors = function (proposedStart) {
     supEnd+=1;
   }
   return computeStart(supEnd);
-};
-
-
-//<%---------- LAG DINÂMICO: CALCULAR LAG EM DIAS ÚTEIS ---------------------- --%>
-/**
- * Calcula a diferença em dias úteis entre a data de término da predecessora
- * e a data de início da sucessora.
- * 
- * @param {Date} predecessorEndDate - Data de término da predecessora
- * @param {Date} successorStartDate - Data de início da sucessora
- * @returns {number} LAG em dias úteis (positivo ou negativo)
- * 
- * Exemplo:
- * - Predecessora termina em 15/11 (sexta)
- * - Sucessora inicia em 12/11 (terça) = LAG -3 (3 dias antes)
- * - Sucessora inicia em 18/11 (segunda) = LAG +1 (1 dia depois)
- */
-Task.prototype.calculateLagInWorkingDays = function(predecessorEndDate, successorStartDate) {
-  try {
-    // Garantir que são objetos Date
-    var endDate = new Date(predecessorEndDate);
-    var startDate = new Date(successorStartDate);
-    
-    // Calcular distância em dias úteis
-    // getDistanceInUnits retorna a diferença com duas datas iguais = 0
-    var lagInWorkingDays = getDistanceInUnits(endDate, startDate);
-    
-    return lagInWorkingDays;
-    
-  } catch (e) {
-    console.error("Erro ao calcular LAG em dias úteis:", e);
-    return 0; // Retornar 0 como padrão em caso de erro
-  }
-};
-
-
-//<%---------- LAG DINÂMICO: RECALCULAR LAGS AO MOVER ---------------------- --%>
-/**
- * Recalcula os LAGs de todas as predecessoras quando uma atividade é movida.
- * Esta função é chamada após arrastar ou editar a data de uma atividade.
- * 
- * Processo:
- * 1. Obter todas as predecessoras (getSuperiors)
- * 2. Para cada predecessora, calcular novo LAG
- * 3. Atualizar o objeto Link com novo LAG
- * 4. Reconstruir string de dependência
- * 5. Chamar updateLinks() para validar e salvar
- * 
- * @returns {boolean} true se sucesso, false se erro
- */
-Task.prototype.recalculateLags = function() {
-  // Se não tem dependências, não há LAG para recalcular
-  if (!this.depends || this.depends.length === 0) {
-    return true;
-  }
-  
-  // Se não tem master (contexto do Gantt), não pode fazer nada
-  if (!this.master) {
-    return false;
-  }
-  
-  try {
-    // Obter todas as predecessoras
-    var sups = this.getSuperiors();
-    
-    if (!sups || sups.length === 0) {
-      return true; // Sem predecessoras, nada a recalcular
-    }
-    
-    // Para cada predecessora, recalcular LAG
-    for (var i = 0; i < sups.length; i++) {
-      var link = sups[i];
-      
-      // Calcular novo LAG baseado no novo início desta atividade
-      var newLag = this.calculateLagInWorkingDays(
-        new Date(link.from.end),  // Data de término da predecessora
-        new Date(this.start)       // Nova data de início desta atividade
-      );
-      
-      // Atualizar o LAG no objeto Link
-      link.lag = newLag;
-    }
-    
-    // Reconstruir string de dependência com novos LAGs
-    this.updateDependsString();
-    
-    // Chamar updateLinks para validar e salvar
-    var updateOk = this.master.updateLinks(this);
-    
-    if (!updateOk) {
-      console.warn("Erro ao atualizar links para tarefa:", this.name);
-      return false;
-    }
-    
-    return true;
-    
-  } catch (e) {
-    console.error("Erro ao recalcular LAGs para tarefa:", this.name, e);
-    return false;
-  }
-};
-
-
-//<%---------- LAG DINÂMICO: ATUALIZAR STRING DE DEPENDÊNCIA ---------------------- --%>
-/**
- * Reconstrói a string de dependência (task.depends) com os LAGs atualizados.
- * 
- * Formato: "2:3,3:4,5"
- * - 2:3 = Tarefa 2 com LAG 3
- * - 3:4 = Tarefa 3 com LAG 4
- * - 5 = Tarefa 5 com LAG 0 (sem LAG explícito)
- * 
- * @returns {boolean} true se sucesso
- */
-Task.prototype.updateDependsString = function() {
-  if (!this.master) {
-    return false;
-  }
-  
-  try {
-    // Obter todas as predecessoras
-    var sups = this.getSuperiors();
-    
-    if (!sups || sups.length === 0) {
-      // Sem predecessoras, limpar string de dependência
-      this.depends = "";
-      return true;
-    }
-    
-    // Construir nova string de dependência
-    var newDependsString = "";
-    
-    for (var i = 0; i < sups.length; i++) {
-      var link = sups[i];
-      
-      // Encontrar índice (1-based) da tarefa predecessora
-      var predecessorIndex = this.master.tasks.indexOf(link.from) + 1;
-      
-      if (predecessorIndex > 0) {
-        // Construir parte da string: "2:3" ou "2" (se LAG = 0)
-        var depPart = predecessorIndex.toString();
-        
-        // Adicionar LAG se for diferente de 0
-        if (link.lag !== 0) {
-          // Usar durationToString para converter LAG para formato correto
-          depPart = depPart + ":" + durationToString(link.lag);
-        }
-        
-        // Adicionar à string com vírgula como separador
-        newDependsString = newDependsString + (newDependsString.length > 0 ? "," : "") + depPart;
-      }
-    }
-    
-    // Atualizar task.depends
-    this.depends = newDependsString;
-    
-    return true;
-    
-  } catch (e) {
-    console.error("Erro ao atualizar string de dependência para tarefa:", this.name, e);
-    return false;
-  }
 };
 
 

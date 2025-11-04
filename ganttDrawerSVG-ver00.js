@@ -273,7 +273,7 @@ Ganttalendar.prototype.drawTask = function (task) {
         task.rowElement.click();
       }).dragExtedSVG($(self.svg.root()), {
         canResize:  this.master.permissions.canWrite || task.canWrite,
-        canDrag:    (task.progress == 0 || !task.depends) && (this.master.permissions.canWrite || task.canWrite),
+        canDrag:    !task.depends && (this.master.permissions.canWrite || task.canWrite),
         resizeZoneWidth:self.resizeZoneWidth,
         startDrag:  function (e) {
           $(".ganttSVGBox .focused").removeClass("focused");
@@ -288,14 +288,6 @@ Ganttalendar.prototype.drawTask = function (task) {
           var s = Math.round((parseFloat(taskbox.attr("x")) / self.fx) + self.startMillis);
           self.master.beginTransaction();
           self.master.moveTask(task, new Date(s));
-          
-          // LAG DINAMICO: Recalcular LAGs ao arrastar
-          // Se tarefa NAO iniciou (progress == 0), recalcula LAGs
-          // Tarefas INICIADAS (progress > 0) mantem LAG fixo
-          if (task.progress == 0) {
-            task.recalculateLags();
-          }
-          
           self.master.endTransaction();
         },
         startResize:function (e) {

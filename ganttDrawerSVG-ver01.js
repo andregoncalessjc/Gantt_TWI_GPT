@@ -288,14 +288,6 @@ Ganttalendar.prototype.drawTask = function (task) {
           var s = Math.round((parseFloat(taskbox.attr("x")) / self.fx) + self.startMillis);
           self.master.beginTransaction();
           self.master.moveTask(task, new Date(s));
-          
-          // LAG DINAMICO: Recalcular LAGs ao arrastar
-          // Se tarefa NAO iniciou (progress == 0), recalcula LAGs
-          // Tarefas INICIADAS (progress > 0) mantem LAG fixo
-          if (task.progress == 0) {
-            task.recalculateLags();
-          }
-          
           self.master.endTransaction();
         },
         startResize:function (e) {
