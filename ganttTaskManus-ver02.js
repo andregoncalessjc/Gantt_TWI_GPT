@@ -614,13 +614,8 @@ Task.prototype.updateDependsString = function() {
         
         // Adicionar LAG se for diferente de 0
         if (link.lag !== 0) {
-          // BUG FIX 3: Formatar LAG corretamente com sufixo 'd' (dias)
-          // LAG 3 -> "3d", LAG -2 -> "-2d"
-          var lagFormatted = link.lag;
-          if (typeof link.lag === 'number') {
-            lagFormatted = link.lag + "d";
-          }
-          depPart = depPart + ":" + lagFormatted;
+          // Usar durationToString para converter LAG para formato correto
+          depPart = depPart + ":" + durationToString(link.lag);
         }
         
         // Adicionar à string com vírgula como separador

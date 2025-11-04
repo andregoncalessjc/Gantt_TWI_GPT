@@ -395,10 +395,6 @@ Ganttalendar.prototype.drawTask = function (task) {
             var depInp = taskTo.rowElement.find("[name=depends]");
             depInp.val(depInp.val() + ((depInp.val() + "").length > 0 ? "," : "") + (taskFrom.getRow() + 1) + (gap != 0 ? ":" + gap : ""));
             depInp.blur();
-            
-            // BUG FIX 1: Atualizar gráfico após criar dependência gráfica
-            // Chama changeTaskDeps para processar a dependência e mover sucessora
-            self.master.changeTaskDeps(taskTo);
           }
         }
       })

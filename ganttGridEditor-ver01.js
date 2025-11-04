@@ -410,13 +410,6 @@ GridEditor.prototype.bindRowInputEvents = function (task, taskRow) {
           }
 
           self.master.changeTaskDeps(task); //dates recomputation from dependencies
-          
-          // BUG FIX 2: Propagar mudanças para sucessoras
-          // Após atualizar dependências, precisa mover sucessoras também
-          var descendants = task.getDescendant();
-          for (var i = 0; i < descendants.length; i++) {
-            descendants[i].propagateToInferiors(descendants[i].end);
-          }
         }
 
       } else if (field == "duration") {
