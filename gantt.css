@@ -100,16 +100,33 @@ body{
 
   /* reserva espaço mesmo quando o SO tenta ocultar/overlay do scroll,
      evitando "salto" no layout ao redimensionar */
-  scrollbar-gutter: stable both-edges;
+  scrollbar-gutter: stable both-edges !important;
 
   /* evita propagação de scroll para o body e ajuda na experiência */
   overscroll-behavior: contain;
 }
 
+
 /* Opcional (melhora visual no Chrome/Edge/WebKit): garante altura de trilho */
 .splitBox1::-webkit-scrollbar,
 .splitBox2::-webkit-scrollbar {
   height: 12px;
+}
+
+
+/* Regras para WebKit (Chrome, Edge, Safari) */
+.splitBox1::-webkit-scrollbar-thumb,
+.splitBox2::-webkit-scrollbar-thumb {
+  /* Garante que o thumb tenha uma cor e seja visível */
+  background-color: #999; /* Cor cinza padrão */
+  border-radius: 6px;
+  border: 3px solid transparent; /* Adiciona uma borda transparente para o thumb parecer menor */
+  background-clip: content-box; /* Garante que a cor de fundo seja aplicada apenas ao conteúdo do thumb */
+}
+
+.splitBox1::-webkit-scrollbar-thumb:hover,
+.splitBox2::-webkit-scrollbar-thumb:hover {
+  background-color: #666; /* Cor mais escura ao passar o mouse */
 }
 
 

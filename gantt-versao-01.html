@@ -67,11 +67,9 @@
 
     /* Mantém o Gantt em altura previsível para o cálculo das barras */
     #workSpace {
-      height: calc(100vh - 32px); /* ajuste fino se tiver header/top bar */
+      height: 100%;
       overflow-y: hidden;          /* evita scroll vertical duplo no wrapper */
-
       padding:0px;
-      overflow-y:auto;
       overflow-x:hidden;
       border:1px solid #e5e5e5;
       position:relative;
@@ -87,41 +85,9 @@
   </style>
 
 
-  <script>
-    (function () {
-      function aplicarScrollEstavel() {
-        var ws = document.getElementById( "workSpace" );
-        if ( !ws ) return;
-
-        var alvos = ws.querySelectorAll( ".splitBox1, .splitBox2" );
-        alvos.forEach( function ( el ) {
-          el.style.overflowX = "scroll";
-          el.style.scrollbarGutter = "stable both-edges";
-          el.style.overscrollBehavior = "contain";
-        } );
-      }
-
-      // Reaplica no resize para evitar qualquer flapping em mudanças de viewport
-      window.addEventListener( "resize", aplicarScrollEstavel, { passive: true } );
-
-      // Hook simples: tente reaplicar quando o DOM estiver pronto e após init
-      document.addEventListener( "DOMContentLoaded", aplicarScrollEstavel, { passive: true } );
-
-      // Exponha para chamar exatamente após o loadProject (ver abaixo)
-      window.__fixGanttScroll = aplicarScrollEstavel;
-    })();
-  </script>
-
-
-
-
 </head>
 <body style="background-color: #fff;">
 
-
-<div id="ndo" style="position:absolute;right:5px;top:5px;width:378px;padding:5px;background-color: #FFF5E6; border:1px solid #F9A22F; font-size:12px" class="noprint">
-  This Gantt editor is free thanks to <a href="http://twproject.com" target="_blank">Twproject</a> where it can be used on a complete and flexible project management solution.<br> Get your projects done! Give <a href="http://twproject.com" target="_blank">Twproject a try now</a>.
-</div>
 <div id="workSpace"></div>
 
 
@@ -442,8 +408,6 @@ function editResources(){
     ge.redraw();
   });
 
-
-  var ndo = createModalPopup(400, 500).append(resourceEditor);
 }
 
 function initializeHistoryManagement(taskId){
