@@ -396,37 +396,16 @@ Ganttalendar.prototype.drawTask = function (task) {
             depInp.val(depInp.val() + ((depInp.val() + "").length > 0 ? "," : "") + (taskFrom.getRow() + 1) + (gap != 0 ? ":" + gap : ""));
             depInp.blur();
             
-            // CORRECAO: Criar dependência com LAG = 0 (padrão)
+            // CORRECAO: Atualizar dependências e mover sucessora para data correta
             // Atualiza links com a nova dependência
             self.master.updateLinks(taskTo);
             
-            // VALIDACAO: Se a atividade JA iniciou (progress > 0), nao muda o inicio
-            // Apenas tarefas NAO iniciadas (progress == 0) podem ser movidas
-            if (taskTo.progress == 0) {
-              // Calcula a data de início baseado em TODAS as predecessoras
-              // Escolhe a data MAIS TARDE entre todas elas (respeitando LAGs)
-              // Usa taskFrom.end como ponto de partida (não a posição atual de taskTo)
-              var newStart = taskFrom.end;
-              
-              // Se há outras predecessoras, calcula a data MAIS TARDE
-              var sups = taskTo.getSuperiors();
-              if (sups && sups.length > 1) {
-                for (var i = 0; i < sups.length; i++) {
-                  var link = sups[i];
-                  var supEndWithLag = incrementDateByUnits(new Date(link.from.end), link.lag);
-                  newStart = Math.max(newStart, supEndWithLag);
-                }
-              }
-              
-              // Move a sucessora para essa data
-              taskTo.moveTo(newStart, false, true);
-              
-              // IMPORTANTE: Recalcular LAG para 0 (padrão ao criar dependência)
-              // Sem isso, moveTo recalcula o LAG baseado na nova posição
-              if (taskTo.recalculateLags) {
-                taskTo.recalculateLags();
-              }
-            }
+            // Calcula a data de início baseado em TODAS as predecessoras
+            // Escolhe a data MAIS TARDE entre todas elas (respeitando LAGs)
+            var newStart = taskTo.computeStartBySuperiors(taskTo.start);
+            
+            // Move a sucessora para essa data
+            taskTo.moveTo(newStart, false, true);
           }
         }
       })
